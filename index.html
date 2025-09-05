@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physics Sandbox v1.5.0</title>
+    <title>Physics Sandbox v1.5.3</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: #000;
+            background: #000000;
             font-family: 'Arial', sans-serif;
             overflow: hidden;
         }
@@ -21,7 +21,7 @@
             right: 0;
             bottom: 0;
             background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
-            display: flex;
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -96,8 +96,8 @@
             left: 40px;
             padding: 10px 25px;
             font-size: 1rem;
-            background: linear-gradient(45deg, #2224bf, #001eff);
-            color: rgb(239, 215, 0);
+            background: #4A90E2;
+            color: rgb(255, 255, 255);
             border: none;
             border-radius: 25px;
             cursor: pointer;
@@ -125,7 +125,7 @@
         .discord-link {
             display: inline-block;
             margin-top: 8px;
-            color: #7289da;
+            color: #617bd7;
             text-decoration: none;
             font-weight: bold;
             transition: all 0.3s;
@@ -137,80 +137,162 @@
         }
 
         #gameCanvas {
-            display: none;
+            display: block;
             cursor: crosshair;
         }
 
-        #controls {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, rgba(20, 20, 20, 0.95), rgba(20, 20, 20, 0.8));
-            padding: 15px;
+        /* Confirmation modal styles */
+        .modal {
             display: none;
-            flex-direction: column;
-            gap: 10px;
-            backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-            max-height: 200px;
-            overflow-y: auto;
-            resize: vertical;
-            min-height: 120px;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
         }
 
-        .controls-toggle {
+        .modal-content {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            margin: 20% auto;
+            padding: 30px;
+            border: 1px solid #444;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal h2 {
+            color: #FFD700;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .modal p {
+            color: #ccc;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            font-size: 1.1rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .modal-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s;
+            min-width: 100px;
+        }
+
+        .modal-btn-confirm {
+            background: #FF4444;
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            background: #FF6666;
+            transform: translateY(-2px);
+        }
+
+        .modal-btn-cancel {
+            background: #666;
+            color: white;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #888;
+            transform: translateY(-2px);
+        }
+
+        /* Left sidebar controls */
+        #leftSidebar {
             position: fixed;
-            bottom: 10px;
-            right: 10px;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 300px;
+            background: linear-gradient(to right, rgba(20, 20, 20, 0.95), rgba(20, 20, 20, 0.8));
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            transform: translateX(-100%);
+            z-index: 100;
+        }
+
+        #leftSidebar.open {
+            transform: translateX(0);
+        }
+
+        .menu-toggle {
+            position: fixed;
+            left: 10px;
+            top: 10px;
             background: rgba(74, 144, 226, 0.9);
             color: white;
             border: none;
-            border-radius: 50%;
-            width: 40px;
+            border-radius: 8px;
+            width: 50px;
             height: 40px;
             cursor: pointer;
-            font-size: 20px;
-            z-index: 100;
-            display: none;
+            font-size: 18px;
+            z-index: 101;
+            display: block;
+            transition: left 0.3s ease;
         }
 
-        .resize-handle {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50px;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.2);
-            cursor: ns-resize;
-            border-radius: 5px 5px 0 0;
+        .menu-toggle.open {
+            left: 310px;
         }
 
-        .controls-collapsed {
-            max-height: 60px;
-            overflow: hidden;
+        .controls-section {
+            margin-bottom: 20px;
         }
 
-        .controls-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
+        .section-title {
+            color: #4A90E2;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(74, 144, 226, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .elements-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
         }
 
         .element-btn {
-            padding: 6px 10px;
+            padding: 8px 6px;
             border: 2px solid;
             background: rgba(255, 255, 255, 0.1);
             color: white;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
-            min-width: 50px;
+            text-align: center;
         }
 
         .element-btn:hover {
@@ -220,7 +302,7 @@
 
         .element-btn.active {
             background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         /* Element colors */
@@ -249,7 +331,7 @@
         }
 
         .oil {
-            border-color: #8B4513;
+            border-color: #cfb480;
         }
 
         .explosive {
@@ -257,7 +339,7 @@
         }
 
         .wood {
-            border-color: #8B4513;
+            border-color: #65320e;
         }
 
         .metal {
@@ -309,8 +391,28 @@
         }
 
         .blackhole {
-            border-color: #000;
-            background: rgba(0, 0, 0, 0.8);
+            border-color: #543572;
+            background: rgba(60, 1, 87, 0.8);
+            position: relative;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .blackhole::after {
+            content: "✕";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #FF0000;
+            font-size: 14px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .blackhole.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
         }
 
         .liquidnitrogen {
@@ -334,37 +436,48 @@
             background: rgba(136, 136, 136, 0.2);
         }
 
-        .brush-control,
-        .vision-control,
-        .speed-control,
-        .size-control {
+        .control-row {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
+            margin-bottom: 10px;
             color: white;
             font-size: 12px;
         }
 
-        #brushSize,
-        #speedSlider,
-        #gridSizeSlider {
-            width: 80px;
+        .control-row label {
+            min-width: 50px;
         }
 
-        .clear-btn,
-        .menu-btn,
-        .thermal-btn,
-        .speed-btn,
-        .collapse-btn {
-            padding: 6px 12px;
-            background: #FF4444;
-            color: white;
+        .control-row input[type="range"] {
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .control-row span {
+            min-width: 30px;
+            text-align: right;
+        }
+
+        .control-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-btn {
+            padding: 8px 12px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             font-size: 11px;
             transition: all 0.2s;
+            color: white;
+        }
+
+        .clear-btn {
+            background: #FF4444;
         }
 
         .menu-btn {
@@ -375,16 +488,7 @@
             background: #FF8800;
         }
 
-        .speed-btn {
-            background: #44FF44;
-        }
-
-        .collapse-btn {
-            background: #8844FF;
-        }
-
-        .thermal-btn.active,
-        .speed-btn.active {
+        .thermal-btn.active {
             box-shadow: 0 0 10px currentColor;
         }
 
@@ -399,14 +503,6 @@
         .thermal-btn:hover {
             background: #FFAA00;
         }
-
-        .speed-btn:hover {
-            background: #66FF66;
-        }
-
-        .collapse-btn:hover {
-            background: #AA66FF;
-        }
     </style>
 </head>
 
@@ -416,8 +512,9 @@
         <h1 class="menu-title">
             <span class="physics-text">PHYSICS</span><br>
             <span class="sandbox-text">SANDBOX</span>
+
         </h1>
-        <div class="version-number">Version 1.5.0</div>
+        <div class="version-number">Version 1.5.3</div>
         <div class="menu-buttons">
             <button class="start-btn" onclick="startGame()">START SIMULATION</button>
         </div>
@@ -432,66 +529,107 @@
     </div>
 
     <canvas id="gameCanvas"></canvas>
-    <button class="controls-toggle" id="toggleBtn" onclick="toggleControls()">▲</button>
 
-    <div id="controls">
-        <div class="resize-handle"></div>
-        <div class="controls-row">
-            <button class="element-btn sand active" data-element="sand">Sand</button>
-            <button class="element-btn water" data-element="water">Water</button>
-            <button class="element-btn stone" data-element="stone">Stone</button>
-            <button class="element-btn fire" data-element="fire">Fire</button>
-            <button class="element-btn ice" data-element="ice">Ice</button>
-            <button class="element-btn acid" data-element="acid">Acid</button>
-            <button class="element-btn oil" data-element="oil">Oil</button>
-            <button class="element-btn explosive" data-element="explosive">TNT</button>
-            <button class="element-btn wood" data-element="wood">Wood</button>
-            <button class="element-btn metal" data-element="metal">Metal</button>
-            <button class="element-btn tin" data-element="tin">Tin</button>
-            <button class="element-btn soil" data-element="soil">Soil</button>
-            <button class="element-btn seed" data-element="seed">Seed</button>
-            <button class="element-btn glass" data-element="glass">Glass</button>
-            <button class="element-btn bomb" data-element="bomb">Bomb</button>
-            <button class="element-btn algae" data-element="algae">Algae</button>
-            <button class="element-btn flower" data-element="flower">Flower</button>
-            <button class="element-btn steam" data-element="steam">Steam</button>
-            <button class="element-btn lava" data-element="lava">Lava</button>
-            <button class="element-btn smoke" data-element="smoke">Smoke</button>
-            <button class="element-btn volcano" data-element="volcano">Volcano</button>
-            <button class="element-btn blackhole" data-element="blackhole">Black Hole</button>
-            <button class="element-btn liquidnitrogen" data-element="liquidnitrogen">Liquid N2</button>
-            <button class="element-btn virus" data-element="virus">Virus</button>
-            <button class="element-btn gunpowder" data-element="gunpowder">Gunpowder</button>
-            <button class="element-btn hydrogen" data-element="hydrogen">Hydrogen</button>
-            <button class="element-btn eraser" data-element="eraser">Eraser</button>
+    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">☰</button>
+
+    <div id="leftSidebar">
+        <div class="controls-section">
+            <div class="section-title">Elements</div>
+            <div class="elements-grid">
+                <button class="element-btn sand active" data-element="sand">Sand</button>
+                <button class="element-btn water" data-element="water">Water</button>
+                <button class="element-btn stone" data-element="stone">Stone</button>
+                <button class="element-btn fire" data-element="fire">Fire</button>
+                <button class="element-btn ice" data-element="ice">Ice</button>
+                <button class="element-btn acid" data-element="acid">Acid</button>
+                <button class="element-btn oil" data-element="oil">Oil</button>
+                <button class="element-btn explosive" data-element="explosive">TNT</button>
+                <button class="element-btn wood" data-element="wood">Wood</button>
+                <button class="element-btn metal" data-element="metal">Metal</button>
+                <button class="element-btn tin" data-element="tin">Tin</button>
+                <button class="element-btn soil" data-element="soil">Soil</button>
+                <button class="element-btn seed" data-element="seed">Seed</button>
+                <button class="element-btn glass" data-element="glass">Glass</button>
+                <button class="element-btn bomb" data-element="bomb">Bomb</button>
+                <button class="element-btn algae" data-element="algae">Algae</button>
+                <button class="element-btn flower" data-element="flower">Flower</button>
+                <button class="element-btn steam" data-element="steam">Steam</button>
+                <button class="element-btn lava" data-element="lava">Lava</button>
+                <button class="element-btn smoke" data-element="smoke">Smoke</button>
+                <button class="element-btn volcano" data-element="volcano">Volcano</button>
+                <button class="element-btn blackhole disabled" data-element="blackhole" disabled>Black Hole</button>
+                <button class="element-btn liquidnitrogen" data-element="liquidnitrogen">Liquid N2</button>
+                <button class="element-btn virus" data-element="virus">Virus</button>
+                <button class="element-btn gunpowder" data-element="gunpowder">Gunpowder</button>
+                <button class="element-btn hydrogen" data-element="hydrogen">Hydrogen</button>
+                <button class="element-btn eraser" data-element="eraser">Eraser</button>
+            </div>
         </div>
 
-        <div class="controls-row">
-            <div class="brush-control">
+        <div class="controls-section">
+            <div class="section-title">Controls</div>
+
+            <div class="control-row">
                 <label>Brush:</label>
                 <input type="range" id="brushSize" min="1" max="20" value="5">
                 <span id="brushValue">5</span>
             </div>
 
-            <div class="speed-control">
+            <div class="control-row">
                 <label>Speed:</label>
                 <input type="range" id="speedSlider" min="0.1" max="5" step="0.1" value="1">
                 <span id="speedValue">1.0x</span>
             </div>
 
-            <div class="size-control">
+            <div class="control-row">
                 <label>Grid:</label>
                 <input type="range" id="gridSizeSlider" min="1" max="6" value="3">
                 <span id="gridValue">3px</span>
             </div>
+        </div>
 
-            <div class="vision-control">
-                <button class="thermal-btn" id="thermalBtn" onclick="toggleThermal()">Thermal Vision</button>
+        <div class="controls-section">
+            <div class="section-title">Actions</div>
+            <div class="control-buttons">
+                <button class="control-btn thermal-btn" id="thermalBtn" onclick="toggleThermal()">Thermal
+                    Vision</button>
+                <button class="control-btn clear-btn" onclick="showClearConfirmation()">Clear Canvas</button>
+                <button class="control-btn menu-btn" onclick="showMenuConfirmation()">Back to Menu</button>
             </div>
+        </div>
+    </div>
 
-            <button class="clear-btn" onclick="clearCanvas()">Clear</button>
-            <button class="menu-btn" onclick="showMenu()">Menu</button>
-            <button class="collapse-btn" onclick="toggleControls()">Collapse</button>
+    <!-- Confirmation Modals -->
+    <div id="clearModal" class="modal">
+        <div class="modal-content">
+            <h2>Clear Canvas</h2>
+            <p>Are you sure you want to clear the entire canvas? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-confirm" onclick="confirmClear()">Yes, Clear</button>
+                <button class="modal-btn modal-btn-cancel" onclick="closeClearModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="menuModal" class="modal">
+        <div class="modal-content">
+            <h2>Return to Menu</h2>
+            <p>Are you sure you want to go back to the main menu? Your current simulation will be lost.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-confirm" onclick="confirmMenu()">Yes, Go to Menu</button>
+                <button class="modal-btn modal-btn-cancel" onclick="closeMenuModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gridModal" class="modal">
+        <div class="modal-content">
+            <h2>Change Grid Size</h2>
+            <p>Changing the grid size will reset your entire simulation. Are you sure you want to continue?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-confirm" onclick="confirmGridChange()">Yes, Change Grid</button>
+                <button class="modal-btn modal-btn-cancel" onclick="cancelGridChange()">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -501,16 +639,17 @@
         const menuCanvas = document.getElementById('menuCanvas');
         const menuCtx = menuCanvas.getContext('2d');
 
-        let gameStarted = false;
+        let gameStarted = true; // Changed to start directly in game
         let thermalVision = false;
-        let controlsCollapsed = false;
+        let sidebarOpen = false;
         let simulationSpeed = 1.0;
         let isDraggingControls = false;
+        let pendingGridSize = null;
 
         // Set canvas sizes
         function resizeCanvases() {
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - (controlsCollapsed ? 80 : document.getElementById('controls').offsetHeight || 120);
+            canvas.height = window.innerHeight;
             menuCanvas.width = window.innerWidth;
             menuCanvas.height = window.innerHeight;
         }
@@ -533,13 +672,13 @@
             stone: { color: '#666', density: 5, flammable: false, liquid: false, temp: 20, meltPoint: 1200 },
             fire: { color: '#FF4500', density: 0, flammable: false, liquid: false, life: 60, temp: 800 },
             ice: { color: '#87CEEB', density: 2, flammable: false, liquid: false, temp: -10, meltPoint: 0 },
-            acid: { color: '#32CD32', density: 1, flammable: false, liquid: true, temp: 20 },
-            oil: { color: '#8B4513', density: 0.8, flammable: true, liquid: true, temp: 20, ignitePoint: 250 },
+            acid: { color: '#32CD32', density: 1, flammable: false, liquid: true, temp: 20, ignitePoint: 140 },
+            oil: { color: '#cfb480', density: 0.8, flammable: true, liquid: true, temp: 20, ignitePoint: 250 },
             explosive: { color: '#FF0000', density: 2, flammable: true, liquid: false, temp: 20, ignitePoint: 300 },
-            wood: { color: '#8B4513', density: 1.5, flammable: true, liquid: false, temp: 20, ignitePoint: 300 },
+            wood: { color: '#65320e', density: 1.5, flammable: true, liquid: false, temp: 20, ignitePoint: 300 },
             metal: { color: '#C0C0C0', density: 8, flammable: false, liquid: false, temp: 20, meltPoint: 1500 },
             tin: { color: '#E6E6FA', density: 7, flammable: false, liquid: false, temp: 20, meltPoint: 232 },
-            moltenTin: { color: '#D3D3D3', density: 6, flammable: false, liquid: true, temp: 300 },
+            moltenTin: { color: '#D3D3D3', density: 6, flammable: false, liquid: true, temp: 300, coolsTo: 'tin' },
             soil: { color: '#8B4513', density: 2, flammable: false, liquid: false, temp: 20, fertile: true },
             seed: { color: '#90EE90', density: 1.2, flammable: false, liquid: false, temp: 20, growthStage: 0 },
             sprout: { color: '#7CFC00', density: 1, flammable: true, liquid: false, temp: 20, ignitePoint: 250 },
@@ -549,9 +688,9 @@
             bomb: { color: '#FF6600', density: 3, flammable: false, liquid: false, temp: 20, explosive: true },
             algae: { color: '#228B22', density: 0.9, flammable: true, liquid: false, temp: 20, ignitePoint: 200, spreadsInWater: true },
             flower: { color: '#FF69B4', density: 0.3, flammable: true, liquid: false, temp: 20, ignitePoint: 180 },
-            steam: { color: '#E0E0E0', density: 0.1, flammable: false, liquid: false, temp: 110, life: 300, rises: true },
+            steam: { color: '#E0E0E0', density: 0, flammable: false, liquid: false, temp: 110, life: 300, rises: true },
             lava: { color: '#FF4500', density: 2.8, flammable: false, liquid: true, temp: 1200, coolsTo: 'stone' },
-            smoke: { color: '#696969', density: 0.2, flammable: false, liquid: false, temp: 200, life: 200, rises: true },
+            smoke: { color: '#696969', density: 0, flammable: false, liquid: false, temp: 200, life: 200, rises: true },
             volcano: { color: '#8B0000', density: 10, flammable: false, liquid: false, temp: 1400, generator: true },
             blackhole: { color: '#000000', density: 100, flammable: false, liquid: false, temp: -273, sucker: true },
             liquidnitrogen: { color: '#00FFFF', density: 0.8, flammable: false, liquid: true, temp: -196, freezer: true },
@@ -563,6 +702,7 @@
 
         // Menu animation
         let drawingLines = [];
+        let volcano = null;
 
         class DrawingLine {
             constructor() {
@@ -570,17 +710,17 @@
             }
 
             reset() {
-                this.startX = Math.random() * menuCanvas.width * 0.2 + menuCanvas.width * 0.1;
-                this.startY = Math.random() * menuCanvas.height * 0.3 + menuCanvas.height * 0.2;
+                this.startX = Math.random() * menuCanvas.width * 0.4 + menuCanvas.width * 0.3;
+                this.startY = Math.random() * menuCanvas.height * 0.4 + menuCanvas.height * 0.3;
                 this.endX = this.startX + (Math.random() - 0.5) * 300;
                 this.endY = this.startY + Math.random() * 200 + 100;
                 this.progress = 0;
                 this.speed = 0.003 + Math.random() * 0.007;
                 this.type = ['sand', 'water', 'fire', 'ice', 'oil', 'soil', 'seed', 'glass', 'algae', 'steam'][Math.floor(Math.random() * 10)];
-                this.particleSize = 2 + Math.random() * 3;
+                this.particleSize = 3 + Math.random() * 3;
                 this.particles = [];
-                this.maxParticles = 20 + Math.random() * 30;
-                this.life = 1200 + Math.random() * 800;
+                this.maxParticles = 180 + Math.random() * 30;
+                this.life = 3200 + Math.random() * 800;
                 this.age = 0;
             }
 
@@ -602,7 +742,7 @@
                             y: currentY + offsetY,
                             vx: (Math.random() - 0.5) * 1.5,
                             vy: Math.random() * 2.5 + 0.5,
-                            life: 150 + Math.random() * 150,
+                            life: 500 + Math.random() * 150,
                             maxLife: 150 + Math.random() * 150,
                             size: this.particleSize
                         });
@@ -670,12 +810,183 @@
                 }
 
                 menuCtx.globalAlpha = 1;
+
+            }
+        }
+
+        class Volcano {
+            constructor() {
+                this.x = menuCanvas.width * 0.85;
+                this.y = menuCanvas.height - 0.95;
+                this.width = 800;
+                this.height = 480;
+                this.craterWidth = 120;
+                this.craterDepth = 20;
+
+                this.rockParticles = [];
+                this.lavaParticles = [];
+                this.lavaSpoutTimer = 0;
+                this.nextEruption = Math.random() * 20 + 60;
+
+                this.generateVolcanoStructure();
+            }
+
+            generateVolcanoStructure() {
+                const baseY = this.y;
+                const peakX = this.x;
+
+                for (let layer = 0; layer < this.height; layer += 2) {
+                    const layerY = baseY - layer;
+                    const layerWidth = this.width * (1 - layer / this.height * 0.6);
+                    const particlesInLayer = Math.floor(layerWidth / 6);
+
+                    for (let i = 0; i < particlesInLayer; i++) {
+                        const offsetX = (i - particlesInLayer / 2) * 6 + (Math.random() - 0.5) * 12;
+
+                        this.rockParticles.push({
+                            x: peakX + offsetX,
+                            y: layerY + (Math.random() - 0.5) * 8,
+                            size: 9 + Math.random() * 4,
+                            permanent: true
+                        });
+                    }
+                }
+
+                const craterY = baseY - this.height;
+                const rimPoints = 32;
+                for (let i = 0; i < rimPoints; i++) {
+                    const angle = (i / rimPoints) * Math.PI;
+                    const rimRadius = this.craterWidth / 2 + (Math.random() - 0.5) * 20;
+                    const rimX = peakX + Math.cos(angle) * rimRadius;
+                    const rimY = craterY + Math.sin(angle) * 15 + (Math.random() - 0.5) * 8;
+
+                    this.rockParticles.push({
+                        x: rimX,
+                        y: rimY,
+                        size: 6 + Math.random() * 5,
+                        permanent: true
+                    });
+                }
+            }
+
+            update() {
+                this.lavaSpoutTimer++;
+
+                if (this.lavaSpoutTimer % 4 === 0) {
+                    const craterY = this.y - this.height;
+                    const spoutX = this.x + (Math.random() - 0.5) * this.craterWidth * 0.8;
+
+                    this.lavaParticles.push({
+                        x: spoutX,
+                        y: craterY,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: Math.random() * 2 + 1,
+                        life: 800 + Math.random() * 400,
+                        maxLife: 800 + Math.random() * 400,
+                        size: 6 + Math.random() * 5,
+                        temperature: 1.0 + Math.random() * 0.5
+                    });
+                }
+
+                if (this.lavaSpoutTimer > this.nextEruption) {
+                    this.erupt();
+                    this.nextEruption = this.lavaSpoutTimer + Math.random() * 10 + 200;
+                }
+
+                // Update lava particles
+                for (let i = this.lavaParticles.length - 1; i >= 0; i--) {
+                    const particle = this.lavaParticles[i];
+
+                    particle.vy += 0.12;
+                    particle.vx *= 0.98;
+                    if (particle.vy > 6) particle.vy = 6;
+
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.life--;
+                    particle.temperature *= 0.998;
+
+                    if (particle.life <= 0 || particle.y > menuCanvas.height + 50) {
+                        this.lavaParticles.splice(i, 1);
+                    }
+                }
+            }
+
+            erupt() {
+                const craterY = this.y - this.height;
+                const eruptionForce = 15 + Math.random() * 15;
+                const particleCount = 20 + Math.random() * 25;
+
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = Math.PI * 1.5 + (Math.random() - 0.5) * Math.PI * 0.3;
+                    const force = eruptionForce * (0.5 + Math.random() * 0.5);
+
+                    this.lavaParticles.push({
+                        x: this.x + (Math.random() - 0.5) * this.craterWidth * 0.5,
+                        y: craterY,
+                        vx: Math.cos(angle) * force * 0.2,
+                        vy: Math.sin(angle) * force * 0.8,
+                        life: 1000 + Math.random() * 500,
+                        maxLife: 1000 + Math.random() * 500,
+                        size: 8 + Math.random() * 6,
+                        temperature: 2.0 + Math.random() * 0.5
+                    });
+                }
+            }
+
+            draw() {
+                // Draw volcano structure
+                for (const particle of this.rockParticles) {
+                    menuCtx.globalAlpha = 2;
+                    menuCtx.fillStyle = elements.rock ? elements.rock.color : '#666';
+                    menuCtx.fillRect(
+                        Math.floor(particle.x - particle.size / 2),
+                        Math.floor(particle.y - particle.size / 2),
+                        particle.size,
+                        particle.size
+                    );
+                }
+
+                // Draw lava particles
+                for (const particle of this.lavaParticles) {
+                    const alpha = particle.life / particle.maxLife;
+                    const temp = particle.temperature;
+
+                    if (temp > 1.5) {
+                        menuCtx.fillStyle = '#FF4500';
+                    } else if (temp > 1.0) {
+                        menuCtx.fillStyle = '#FF6B35';
+                    } else if (temp > 0.5) {
+                        menuCtx.fillStyle = '#FF8C42';
+                    } else {
+                        menuCtx.fillStyle = '#8B4513';
+                    }
+
+                    if (temp > 1.2) {
+                        menuCtx.shadowColor = menuCtx.fillStyle;
+                        menuCtx.shadowBlur = 8;
+                    }
+
+                    menuCtx.globalAlpha = alpha * 0.9;
+                    menuCtx.fillRect(
+                        Math.floor(particle.x - particle.size / 2),
+                        Math.floor(particle.y - particle.size / 2),
+                        particle.size,
+                        particle.size
+                    );
+
+                    menuCtx.shadowBlur = 0;
+                }
+
+                menuCtx.globalAlpha = 1;
             }
         }
 
         for (let i = 0; i < 6; i++) {
             drawingLines.push(new DrawingLine());
         }
+
+        volcano = new Volcano();
 
         function animateMenu() {
             if (!gameStarted) {
@@ -685,6 +996,9 @@
                     line.update();
                     line.draw();
                 });
+
+                volcano.update();
+                volcano.draw();
 
                 requestAnimationFrame(animateMenu);
             }
@@ -784,19 +1098,50 @@
                 particle.temp = Math.min(20, particle.temp + 0.15);
             }
 
-            // Lava interactions - ignites everything it touches and turns to stone with liquid nitrogen
+            // Fixed tin melting - check temperature and nearby fire
+            if (type === 'tin' && (particle.temp > elements.tin.meltPoint || particle.temp > 200)) {
+                let shouldMelt = particle.temp > elements.tin.meltPoint;
+                // Also check for nearby fire
+                if (!shouldMelt) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        for (let dy = -1; dy <= 1; dy++) {
+                            const neighbor = getParticle(x + dx, y + dy);
+                            if (neighbor && (neighbor.type === 'fire' || neighbor.type === 'lava' || neighbor.temp > 400)) {
+                                particle.temp += 50;
+                                shouldMelt = true;
+                                break;
+                            }
+                        }
+                        if (shouldMelt) break;
+                    }
+                }
+                if (shouldMelt) {
+                    const molten = new Particle(x, y, 'moltenTin');
+                    molten.temp = 300;
+                    setParticle(x, y, molten);
+                    return;
+                }
+            }
+
+            // Molten tin cooling logic
+            if (type === 'moltenTin' && particle.temp <= elements.tin.meltPoint) {
+                const cooled = new Particle(x, y, 'tin');
+                cooled.temp = particle.temp; // Preserve the current temperature
+                setParticle(x, y, cooled);
+                return;
+            }
+
+            // Lava interactions
             if (type === 'lava') {
                 for (let dx = -1; dx <= 1; dx++) {
                     for (let dy = -1; dy <= 1; dy++) {
                         const neighbor = getParticle(x + dx, y + dy);
                         if (neighbor) {
-                            // Lava turns to stone when touching liquid nitrogen
                             if (neighbor.type === 'liquidnitrogen') {
                                 setParticle(x, y, new Particle(x, y, 'stone'));
                                 return;
                             }
 
-                            // Lava sets everything on fire
                             neighbor.temp += 100;
                             if (elements[neighbor.type].flammable || ['wood', 'plant', 'leaf', 'sprout', 'flower', 'algae', 'oil', 'explosive', 'gunpowder', 'hydrogen'].includes(neighbor.type)) {
                                 if (Math.random() < 0.3) {
@@ -804,12 +1149,10 @@
                                 }
                             }
 
-                            // Lava turns water to steam
                             if (neighbor.type === 'water') {
                                 setParticle(x + dx, y + dy, new Particle(x + dx, y + dy, 'steam'));
                             }
 
-                            // Lava melts ice
                             if (neighbor.type === 'ice') {
                                 setParticle(x + dx, y + dy, new Particle(x + dx, y + dy, 'water'));
                             }
@@ -817,7 +1160,6 @@
                     }
                 }
 
-                // Lava cools down over time and turns to stone
                 if (particle.temp < 600) {
                     setParticle(x, y, new Particle(x, y, 'stone'));
                     return;
@@ -826,17 +1168,15 @@
 
             // Bomb explodes when hitting something at high speed
             if (type === 'bomb') {
-                // Track falling distance
                 if (isEmpty(x, y + 1)) {
                     particle.fallDistance++;
                 } else if (particle.fallDistance > 3) {
-                    // Explode if bomb has fallen far enough and hits something
                     explodeBomb(x, y);
                     return;
                 }
             }
 
-            // Volcano Core - generates lava
+            // Volcano Core
             if (type === 'volcano') {
                 particle.lavaTimer++;
                 if (particle.lavaTimer > 30) {
@@ -853,7 +1193,7 @@
                 return;
             }
 
-            // Black Hole - sucks in nearby particles
+            // Black Hole
             if (type === 'blackhole') {
                 const suckRadius = 8;
                 for (let dx = -suckRadius; dx <= suckRadius; dx++) {
@@ -880,7 +1220,7 @@
                 return;
             }
 
-            // Liquid Nitrogen - freezes everything and makes brittle ice
+            // Liquid Nitrogen
             if (type === 'liquidnitrogen') {
                 for (let dx = -2; dx <= 2; dx++) {
                     for (let dy = -2; dy <= 2; dy++) {
@@ -917,7 +1257,7 @@
                 }
             }
 
-            // Virus - eats EVERYTHING, not just biological materials
+            // Virus
             if (type === 'virus') {
                 particle.life--;
                 if (particle.life <= 0) {
@@ -929,7 +1269,6 @@
                     for (let dy = -2; dy <= 2; dy++) {
                         const neighbor = getParticle(x + dx, y + dy);
                         if (neighbor && neighbor.type !== 'virus' && Math.random() < 0.03) {
-                            // Virus eats everything except itself and spreads
                             if (Math.random() < 0.4) {
                                 setParticle(x + dx, y + dy, new Particle(x + dx, y + dy, 'virus'));
                             } else {
@@ -939,7 +1278,6 @@
                     }
                 }
 
-                // Virus movement
                 if (Math.random() < 0.1) {
                     const directions = [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, -1], [-1, 1], [1, 1]];
                     const dir = directions[Math.floor(Math.random() * directions.length)];
@@ -951,7 +1289,6 @@
 
             // Hydrogen gas behavior
             if (type === 'hydrogen') {
-                // Hydrogen rises
                 if (isEmpty(x, y - 1) && Math.random() < 0.6) {
                     swapParticles(x, y, x, y - 1);
                 } else if (Math.random() < 0.3) {
@@ -982,7 +1319,7 @@
                 return;
             }
 
-            // Ice only melts on contact with hot things
+            // Ice melting
             if (type === 'ice') {
                 let shouldMelt = false;
                 for (let dx = -1; dx <= 1; dx++) {
@@ -1002,7 +1339,7 @@
                 }
             }
 
-            // Enhanced seed growth - no water needed, unlimited height
+            // Seed growth
             if (type === 'seed') {
                 let inSoil = false;
                 for (let dx = -1; dx <= 1; dx++) {
@@ -1021,7 +1358,7 @@
                 }
             }
 
-            // Enhanced sprout growth
+            // Sprout growth
             if (type === 'sprout') {
                 let inSoil = false;
                 for (let dx = -1; dx <= 1; dx++) {
@@ -1045,7 +1382,7 @@
                 }
             }
 
-            // Unlimited plant growth
+            // Plant growth
             if (type === 'plant' && particle.age > 30 && particle.age % 100 === 0) {
                 let hasNutrients = false;
                 for (let dx = -3; dx <= 3; dx++) {
@@ -1056,13 +1393,11 @@
                 }
 
                 if (hasNutrients && particle.temp > 5) {
-                    // Grow upward without limit
                     if (isEmpty(x, y - 1)) {
                         const newPlant = new Particle(x, y - 1, 'plant');
                         newPlant.height = particle.height + 1;
                         setParticle(x, y - 1, newPlant);
 
-                        // Add leaves
                         const leafPositions = [[-1, 0], [1, 0]];
                         if (particle.height % 3 === 0) {
                             leafPositions.push([-1, -1], [1, -1], [0, -1]);
@@ -1074,7 +1409,6 @@
                             }
                         }
 
-                        // Generate flowers on tall plants
                         if (particle.height >= 5 && particle.height % 4 === 0 && Math.random() < 0.4) {
                             if (isEmpty(x, y - 2)) {
                                 setParticle(x, y - 2, new Particle(x, y - 2, 'flower'));
@@ -1083,7 +1417,6 @@
                     }
                 }
 
-                // Horizontal leaf spreading
                 if (Math.random() < 0.2) {
                     const directions = [[-2, 0], [2, 0], [-1, -1], [1, -1]];
                     for (const [dx, dy] of directions) {
@@ -1137,7 +1470,7 @@
                 return;
             }
 
-            // Fire logic with enhanced interactions
+            // Fire logic
             if (type === 'fire') {
                 particle.life--;
                 if (particle.life <= 0) {
@@ -1168,7 +1501,6 @@
                     }
                 }
 
-                // Fire rises
                 if (isEmpty(x, y - 1) && Math.random() < 0.3) {
                     swapParticles(x, y, x, y - 1);
                 }
@@ -1195,7 +1527,7 @@
                 return;
             }
 
-            // Rest of physics simulation
+            // Physics simulation - improved water flow
             const element = elements[type];
             const isLiquid = element.liquid;
             const shouldFall = ['soil', 'sand', 'seed', 'bomb', 'gunpowder'].includes(type) || isLiquid;
@@ -1213,6 +1545,7 @@
                     particle.vy = Math.min(particle.vy + 0.1, 3);
                     swapParticles(x, y, x, y + 1);
                 } else if (isLiquid || type === 'moltenTin' || type === 'lava' || type === 'liquidnitrogen') {
+                    // Enhanced liquid flow - try diagonal down first, then sideways
                     const leftDown = getParticle(x - 1, y + 1);
                     const rightDown = getParticle(x + 1, y + 1);
 
@@ -1229,6 +1562,7 @@
                     } else if (canFlowRight) {
                         swapParticles(x, y, x + 1, y + 1);
                     } else {
+                        // Horizontal flow - much more aggressive for water
                         const sideLeft = getParticle(x - 1, y);
                         const sideRight = getParticle(x + 1, y);
 
@@ -1237,12 +1571,15 @@
                         const canMoveRight = !sideRight || (elements[sideRight.type].liquid &&
                             elements[type].density > elements[sideRight.type].density);
 
-                        if (canMoveLeft && canMoveRight && Math.random() < 0.3) {
+                        // Increased flow chance for water specifically
+                        const flowChance = type === 'water' ? 0.8 : 0.3;
+
+                        if (canMoveLeft && canMoveRight && Math.random() < flowChance) {
                             const dir = Math.random() < 0.5 ? -1 : 1;
                             swapParticles(x, y, x + dir, y);
-                        } else if (canMoveLeft && Math.random() < 0.3) {
+                        } else if (canMoveLeft && Math.random() < flowChance) {
                             swapParticles(x, y, x - 1, y);
-                        } else if (canMoveRight && Math.random() < 0.3) {
+                        } else if (canMoveRight && Math.random() < flowChance) {
                             swapParticles(x, y, x + 1, y);
                         }
                     }
@@ -1419,24 +1756,95 @@
             requestAnimationFrame(gameLoop);
         }
 
+        // Modal Functions
+        function showClearConfirmation() {
+            document.getElementById('clearModal').style.display = 'block';
+        }
+
+        function closeClearModal() {
+            document.getElementById('clearModal').style.display = 'none';
+        }
+
+        function confirmClear() {
+            initGrid();
+            closeClearModal();
+        }
+
+        function showMenuConfirmation() {
+            document.getElementById('menuModal').style.display = 'block';
+        }
+
+        function closeMenuModal() {
+            document.getElementById('menuModal').style.display = 'none';
+        }
+
+        function confirmMenu() {
+            showMenu();
+            closeMenuModal();
+        }
+
+        function showGridConfirmation(newSize) {
+            pendingGridSize = newSize;
+            document.getElementById('gridModal').style.display = 'block';
+        }
+
+        function confirmGridChange() {
+            if (pendingGridSize !== null) {
+                GRID_SIZE = pendingGridSize;
+                cols = Math.floor(canvas.width / GRID_SIZE);
+                rows = Math.floor(canvas.height / GRID_SIZE);
+                initGrid();
+                pendingGridSize = null;
+            }
+            document.getElementById('gridModal').style.display = 'none';
+        }
+
+        function cancelGridChange() {
+            // Reset slider to current grid size
+            document.getElementById('gridSizeSlider').value = GRID_SIZE;
+            document.getElementById('gridValue').textContent = GRID_SIZE + 'px';
+            pendingGridSize = null;
+            document.getElementById('gridModal').style.display = 'none';
+        }
+
         // UI Functions
         function startGame() {
             gameStarted = true;
             document.getElementById('mainMenu').style.display = 'none';
             document.getElementById('gameCanvas').style.display = 'block';
-            document.getElementById('controls').style.display = 'flex';
-            document.getElementById('toggleBtn').style.display = 'block';
+            document.getElementById('leftSidebar').style.display = 'flex';
+            document.getElementById('menuToggle').style.display = 'block';
             initGrid();
             gameLoop();
         }
 
         function showMenu() {
             gameStarted = false;
+            sidebarOpen = false;
             document.getElementById('mainMenu').style.display = 'flex';
             document.getElementById('gameCanvas').style.display = 'none';
-            document.getElementById('controls').style.display = 'none';
-            document.getElementById('toggleBtn').style.display = 'none';
+            document.getElementById('leftSidebar').style.display = 'none';
+            document.getElementById('leftSidebar').classList.remove('open');
+            document.getElementById('menuToggle').style.display = 'none';
+            document.getElementById('menuToggle').classList.remove('open');
             animateMenu();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('leftSidebar');
+            const toggleBtn = document.getElementById('menuToggle');
+
+            sidebarOpen = !sidebarOpen;
+
+            if (sidebarOpen) {
+                sidebar.classList.add('open');
+                toggleBtn.classList.add('open');
+                toggleBtn.textContent = '✕';
+            } else {
+                sidebar.classList.remove('open');
+                toggleBtn.classList.remove('open');
+                toggleBtn.textContent = '☰';
+            }
         }
 
         function openWhatsNew() {
@@ -1454,59 +1862,6 @@
                 btn.classList.remove('active');
                 btn.textContent = 'Thermal Vision';
             }
-        }
-
-        function toggleControls() {
-            const controls = document.getElementById('controls');
-            const toggleBtn = document.getElementById('toggleBtn');
-
-            controlsCollapsed = !controlsCollapsed;
-
-            if (controlsCollapsed) {
-                controls.classList.add('controls-collapsed');
-                toggleBtn.textContent = '▲';
-                toggleBtn.style.bottom = '70px';
-            } else {
-                controls.classList.remove('controls-collapsed');
-                toggleBtn.textContent = '▼';
-                toggleBtn.style.bottom = '10px';
-            }
-
-            resizeCanvases();
-            cols = Math.floor(canvas.width / GRID_SIZE);
-            rows = Math.floor(canvas.height / GRID_SIZE);
-        }
-
-        function updateGridSize() {
-            GRID_SIZE = parseInt(document.getElementById('gridSizeSlider').value);
-            cols = Math.floor(canvas.width / GRID_SIZE);
-            rows = Math.floor(canvas.height / GRID_SIZE);
-            initGrid();
-        }
-
-        // Controls resizing
-        let isResizing = false;
-        const controls = document.getElementById('controls');
-        const resizeHandle = controls.querySelector('.resize-handle');
-
-        resizeHandle.addEventListener('mousedown', (e) => {
-            isResizing = true;
-            document.addEventListener('mousemove', handleResize);
-            document.addEventListener('mouseup', stopResize);
-        });
-
-        function handleResize(e) {
-            if (!isResizing) return;
-            const rect = controls.getBoundingClientRect();
-            const newHeight = window.innerHeight - e.clientY;
-            controls.style.maxHeight = Math.max(60, Math.min(400, newHeight)) + 'px';
-            resizeCanvases();
-        }
-
-        function stopResize() {
-            isResizing = false;
-            document.removeEventListener('mousemove', handleResize);
-            document.removeEventListener('mouseup', stopResize);
         }
 
         // Drawing functions
@@ -1585,6 +1940,11 @@
         // Element selection
         document.querySelectorAll('.element-btn').forEach(btn => {
             btn.addEventListener('click', () => {
+                // Skip disabled buttons
+                if (btn.disabled || btn.classList.contains('disabled')) {
+                    return;
+                }
+
                 document.querySelector('.element-btn.active')?.classList.remove('active');
                 btn.classList.add('active');
                 currentElement = btn.dataset.element;
@@ -1610,13 +1970,33 @@
         });
 
         gridSizeSlider.addEventListener('input', (e) => {
-            gridValue.textContent = e.target.value + 'px';
-            updateGridSize();
+            const newSize = parseInt(e.target.value);
+            gridValue.textContent = newSize + 'px';
         });
 
-        function clearCanvas() {
-            initGrid();
-        }
+        gridSizeSlider.addEventListener('change', (e) => {
+            const newSize = parseInt(e.target.value);
+            if (newSize !== GRID_SIZE) {
+                showGridConfirmation(newSize);
+            }
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            const clearModal = document.getElementById('clearModal');
+            const menuModal = document.getElementById('menuModal');
+            const gridModal = document.getElementById('gridModal');
+
+            if (e.target === clearModal) {
+                closeClearModal();
+            }
+            if (e.target === menuModal) {
+                closeMenuModal();
+            }
+            if (e.target === gridModal) {
+                cancelGridChange();
+            }
+        });
 
         window.addEventListener('resize', () => {
             resizeCanvases();
@@ -1625,6 +2005,11 @@
             if (gameStarted) {
                 initGrid();
             }
+        });
+
+        // Initialize game immediately
+        window.addEventListener('load', () => {
+            startGame();
         });
 
     </script>
